@@ -24,10 +24,15 @@ const FILTER_NAMES = Object.keys(FILTER_MAP);
 
 
 function App(props) {
-    const [tasks, setTasks] = useState(props.tasks);
+    // const [tasks, setTasks] = useState(props.tasks);
+    const [tasks, setTasks] = useState(() => {
+        const storedTasks = JSON.parse(localStorage.getItem('tasks'));
+        return storedTasks || props.tasks;
+    });
     const [filter, setFilter] = useState('All');
 
     function toggleTaskCompleted(id) {
+        console.log(tasks);
         const updatedTasks = tasks.map((task) => {
             // if this task has the same ID as the edited task
             if (id === task.id) {
@@ -38,11 +43,14 @@ function App(props) {
             return task;
         });
         setTasks(updatedTasks);
+        console.log(updatedTasks);
+        localStorage.setItem('tasks', JSON.stringify(updatedTasks));
     }
 
     function deleteTask(id) {
         const remainingTasks = tasks.filter((task) => id !== task.id);
         setTasks(remainingTasks);
+        localStorage.setItem('tasks', JSON.stringify(remainingTasks));
     }
 
     const taskList = tasks.filter(FILTER_MAP[filter]).map((task) => (
@@ -72,7 +80,9 @@ function App(props) {
 
     function addTask(name) {
         const newTask = { id: `todo-${nanoid()}`, name: name, completed: false };
-        setTasks([...tasks, newTask]);
+        const newTasks = [...tasks, newTask];
+        setTasks(newTasks);  // setTasks([...tasks, newTask]);
+        localStorage.setItem('tasks', JSON.stringify(newTasks));
     }
 
     function editTask(id, newName) {
@@ -85,6 +95,7 @@ function App(props) {
             return task;
         });
         setTasks(editedTaskList);
+        localStorage.setItem('tasks', JSON.stringify(editedTaskList));
     }
 
     const listHeadingRef = useRef(null);
@@ -94,7 +105,6 @@ function App(props) {
             listHeadingRef.current.focus();
         }
     }, [tasks.length, prevTaskLength]);
-
 
 
     return (
